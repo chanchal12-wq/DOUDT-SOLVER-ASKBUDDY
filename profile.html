@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+
+                    <!-- Profile Photo -->
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="profile-photo-wrapper">
+                            {% if user.profile_photo %}
+                            <img src="{{ url_for('static', filename=user.profile_photo) }}"
+                                 class="profile-avatar profile-avatar-lg" alt="Profile Photo">
+                            {% else %}
+                            <div class="profile-avatar-placeholder profile-avatar-lg">
+                                <i class="fas fa-user-circle fa-3x text-white"></i>
+                            </div>
+                            {% endif %}
+
+                            {% if session.user_id == user.id %}
+                            <label for="photoInput" class="photo-edit-btn" title="Change photo">
+                                <i class="fas fa-camera"></i>
+                            </label>
+                            <form id="photoForm" method="POST"
+                                  action="{{ url_for('upload_profile_photo') }}"
+                                  enctype="multipart/form-data" style="display:none;">
+                                <input type="file" id="photoInput" name="photo"
+                                       accept="image/*"
+                                       onchange="document.getElementById('photoForm').submit()">
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h4>{{ user.name }}</h4>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <span class="badge bg-info">{{ user.role }}</span>
+
+                    {% if session.user_id == user.id %}
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-camera"></i> Click the camera icon to change your photo
+                        </small>
+                    </div>
+                    {% endif %}
+
+                    <hr>
+                    <h3 class="text-warning">{{ user.reputation_points }}</h3>
+                    <p>Reputation Points</p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5>Statistics</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-question-circle text-primary"></i> {{ stats.questions_posted }} Questions</li>
+                        <li><i class="fas fa-comments text-success"></i> {{ stats.answers_given }} Answers</li>
+                        <li><i class="fas fa-check-circle text-warning"></i> {{ stats.best_answers }} Best Answers</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <ul class="nav nav-tabs" id="profileTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#questions">Questions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#answers">Answers</a>
+                </li>
+            </ul>
+
+            <div class="tab-content mt-3">
+                <div class="tab-pane fade show active" id="questions">
+                    {% for question in questions %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-{{ 'success' if question.status == 'solved' else 'warning' }}">
+                                    {{ question.status }}
+                                </span>
+                                <small class="text-muted">{{ question.answer_count }} answers</small>
+                            </div>
+                            <h6 class="mt-2">{{ question.title }}</h6>
+                            <a href="{{ url_for('question_detail', question_id=question.id) }}"
+                               class="btn btn-sm btn-outline-primary">View</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No questions posted yet.</p>
+                    {% endfor %}
+                </div>
+
+                <div class="tab-pane fade" id="answers">
+                    {% for answer in answers %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h6>
+                                <a href="{{ url_for('question_detail', question_id=answer.question_id) }}">
+                                    {{ answer.question_title }}
+                                </a>
+                            </h6>
+                            <p class="text-muted small">{{ answer.answer_text[:150] }}...</p>
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-info">{{ answer.votes }} votes</span>
+                                {% if answer.is_best_answer %}
+                                <span class="badge bg-success"><i class="fas fa-check"></i> Best Answer</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No answers given yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

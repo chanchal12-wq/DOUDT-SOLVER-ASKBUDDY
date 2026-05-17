@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <h2><i class="fas fa-trophy"></i> Leaderboard</h2>
+    <p class="text-muted">Top students by reputation points</p>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Reputation</th>
+                        <th>Questions</th>
+                        <th>Answers</th>
+                        <th>Best Answers</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in top_students %}
+                    <tr>
+                        <td>
+                            {% if loop.index == 1 %}
+                            <i class="fas fa-trophy text-warning"></i>
+                            {% elif loop.index == 2 %}
+                            <i class="fas fa-medal text-secondary"></i>
+                            {% elif loop.index == 3 %}
+                            <i class="fas fa-medal" style="color: #CD7F32;"></i>
+                            {% else %}
+                            {{ loop.index }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('profile', user_id=student.id) }}">{{ student.name }}</a>
+                        </td>
+                        <td><span class="badge bg-warning text-dark">{{ student.reputation_points }}</span></td>
+                        <td>{{ student.questions_count }}</td>
+                        <td>{{ student.answers_count }}</td>
+                        <td>{{ student.best_answers_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row align-items-center mb-4">
+        <div class="col-auto">
+            <div class="profile-photo-wrapper">
+                {% if session.profile_photo %}
+                <img src="{{ url_for('static', filename=session.profile_photo) }}"
+                     class="profile-avatar" alt="Profile Photo">
+                {% else %}
+                <div class="profile-avatar-placeholder">
+                    <i class="fas fa-user-graduate fa-3x text-white"></i>
+                </div>
+                {% endif %}
+                <label for="photoInput" class="photo-edit-btn" title="Change photo">
+                    <i class="fas fa-camera"></i>
+                </label>
+                <form id="photoForm" method="POST" action="{{ url_for('upload_profile_photo') }}"
+                      enctype="multipart/form-data" style="display:none;">
+                    <input type="file" id="photoInput" name="photo"
+                           accept="image/*" onchange="document.getElementById('photoForm').submit()">
+                </form>
+            </div>
+        </div>
+        <div class="col">
+            <h2 class="mb-0"><i class="fas fa-tachometer-alt"></i> Student Dashboard</h2>
+            <p class="text-muted mb-0">Welcome back, {{ session.name }}!</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body">
+                    <h3>{{ stats.questions_posted }}</h3>
+                    <p>Questions Posted</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body">
+                    <h3>{{ stats.answers_given }}</h3>
+                    <p>Answers Given</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-warning text-white">
+                <div class="card-body">
+                    <h3>{{ stats.reputation }}</h3>
+                    <p>Reputation Points</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body">
+                    <h3>{{ stats.best_answers }}</h3>
+                    <p>Best Answers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <a href="{{ url_for('ask_question') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Ask New Question
+        </a>
+        <a href="{{ url_for('view_questions') }}" class="btn btn-outline-primary">
+            <i class="fas fa-search"></i> Browse Questions
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h4>My Recent Questions</h4>
+            {% for question in my_questions %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span class="badge bg-{{ 'success' if question.status == 'solved' else 'warning' }}">
+                            {{ question.status }}
+                        </span>
+                        <small class="text-muted">{{ question.answer_count }} answers</small>
+                    </div>
+                    <h6 class="mt-2">{{ question.title }}</h6>
+                    <a href="{{ url_for('question_detail', question_id=question.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-muted">No questions posted yet.</p>
+            {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+            <h4>My Recent Answers</h4>
+            {% for answer in my_answers %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <h6>{{ answer.question_title }}</h6>
+                    <p class="text-muted small">{{ answer.answer_text[:100] }}...</p>
+                    <div class="d-flex justify-content-between">
+                        <span class="badge bg-info">{{ answer.votes }} votes</span>
+                        {% if answer.is_best_answer %}
+                        <span class="badge bg-success"><i class="fas fa-check"></i> Best Answer</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-muted">No answers given yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

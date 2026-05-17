@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row align-items-center mb-4">
+        <div class="col-auto">
+            <div class="profile-photo-wrapper">
+                {% if session.profile_photo %}
+                <img src="{{ url_for('static', filename=session.profile_photo) }}"
+                     class="profile-avatar" alt="Profile Photo">
+                {% else %}
+                <div class="profile-avatar-placeholder">
+                    <i class="fas fa-chalkboard-teacher fa-3x text-white"></i>
+                </div>
+                {% endif %}
+                <label for="photoInput" class="photo-edit-btn" title="Change photo">
+                    <i class="fas fa-camera"></i>
+                </label>
+                <form id="photoForm" method="POST" action="{{ url_for('upload_profile_photo') }}"
+                      enctype="multipart/form-data" style="display:none;">
+                    <input type="file" id="photoInput" name="photo"
+                           accept="image/*" onchange="document.getElementById('photoForm').submit()">
+                </form>
+            </div>
+        </div>
+        <div class="col">
+            <h2 class="mb-0"><i class="fas fa-chalkboard-teacher"></i> Teacher Dashboard</h2>
+            <p class="text-muted mb-0">Welcome, {{ session.name }}!</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body">
+                    <h3>{{ stats.total_questions }}</h3>
+                    <p>Total Questions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-warning text-white">
+                <div class="card-body">
+                    <h3>{{ stats.unsolved_questions }}</h3>
+                    <p>Unsolved Questions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body">
+                    <h3>{{ stats.my_answers }}</h3>
+                    <p>My Answers</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body">
+                    <h3>{{ stats.active_students }}</h3>
+                    <p>Active Students</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <a href="{{ url_for('upload_material') }}" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Upload Study Material
+        </a>
+        <a href="{{ url_for('view_questions') }}" class="btn btn-outline-primary">
+            <i class="fas fa-search"></i> Browse All Questions
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <h4>Recent Student Questions</h4>
+            {% for question in recent_questions %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span class="badge bg-primary">{{ question.subject }}</span>
+                        <span class="badge bg-{{ 'success' if question.status == 'solved' else 'warning' }}">
+                            {{ question.status }}
+                        </span>
+                    </div>
+                    <h6 class="mt-2">{{ question.title }}</h6>
+                    <p class="text-muted small">by {{ question.author_name }}</p>
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">{{ question.answer_count }} answers</small>
+                        <a href="{{ url_for('question_detail', question_id=question.id) }}" 
+                           class="btn btn-sm btn-outline-primary">Answer</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-md-4">
+            <h4>Subject Activity</h4>
+            <div class="card">
+                <div class="card-body">
+                    <canvas id="subjectChart"
+                            data-labels='{{ subject_stats|map(attribute="subject")|list|tojson }}'
+                            data-values='{{ subject_stats|map(attribute="count")|list|tojson }}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const ctx = document.getElementById('subjectChart');
+    if (ctx) {
+        const labels = JSON.parse(ctx.dataset.labels || '[]');
+        const values = JSON.parse(ctx.dataset.values || '[]');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

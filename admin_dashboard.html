@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <h2><i class="fas fa-user-shield"></i> Admin Dashboard</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.total_users }}</h3>
+                    <p>Total Users</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.total_students }}</h3>
+                    <p>Students</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.total_teachers }}</h3>
+                    <p>Teachers</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.total_questions }}</h3>
+                    <p>Questions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.total_answers }}</h3>
+                    <p>Answers</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card stat-card bg-dark text-white">
+                <div class="card-body text-center">
+                    <h3>{{ stats.solved_questions }}</h3>
+                    <p>Solved</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <a href="{{ url_for('manage_users') }}" class="btn btn-primary">
+            <i class="fas fa-users"></i> Manage Users
+        </a>
+        <a href="{{ url_for('view_questions') }}" class="btn btn-outline-primary">
+            <i class="fas fa-question-circle"></i> View Questions
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Subject Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="subjectChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Top Students</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Reputation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in top_students %}
+                            <tr>
+                                <td>{{ student.name }}</td>
+                                <td><span class="badge bg-warning text-dark">{{ student.reputation_points }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Recent Users</h5>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Reputation</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in recent_users %}
+                    <tr>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td><span class="badge bg-info">{{ user.role }}</span></td>
+                        <td>{{ user.reputation_points }}</td>
+                        <td>{{ user.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+const ctx = document.getElementById('subjectChart');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [{% for s in subject_stats %}'{{ s.subject }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Questions',
+            data: [{% for s in subject_stats %}{{ s.count }}{% if not loop.last %},{% endif %}{% endfor %}],
+            backgroundColor: '#4e73df'
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

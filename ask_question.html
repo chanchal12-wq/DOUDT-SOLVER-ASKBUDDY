@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+    <h2><i class="fas fa-question-circle"></i> Ask a Question</h2>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Question Title</label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   placeholder="What is your question?" required onkeyup="checkSimilar()">
+                            <small class="text-muted">Be specific and clear</small>
+                        </div>
+
+                        <div id="similar-questions" class="mb-3"></div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="6" placeholder="Provide more details about your question" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Subject</label>
+                            <select class="form-select" id="subject" name="subject" required>
+                                <option value="">Select Subject</option>
+                                <option value="Mathematics">Mathematics</option>
+                                <option value="Physics">Physics</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="Biology">Biology</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="English">English</option>
+                                <option value="History">History</option>
+                                <option value="Geography">Geography</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tags" class="form-label">Tags</label>
+                            <input type="text" class="form-control" id="tags" name="tags" 
+                                   placeholder="algebra, equations, problem-solving">
+                            <small class="text-muted">Separate tags with commas</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Upload Image (Optional)</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Post Question
+                        </button>
+                        <a href="{{ url_for('student_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5><i class="fas fa-lightbulb"></i> Tips for asking</h5>
+                    <ul class="small">
+                        <li>Make your title clear and specific</li>
+                        <li>Provide context and details</li>
+                        <li>Show what you've tried</li>
+                        <li>Use proper formatting</li>
+                        <li>Add relevant tags</li>
+                        <li>Upload images if needed</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let similarTimeout;
+function checkSimilar() {
+    clearTimeout(similarTimeout);
+    const title = document.getElementById('title').value;
+    
+    if (title.length < 3) {
+        document.getElementById('similar-questions').innerHTML = '';
+        return;
+    }
+    
+    similarTimeout = setTimeout(() => {
+        fetch(`/api/similar-questions?title=${encodeURIComponent(title)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.length > 0) {
+                    let html = '<div class="alert alert-info"><strong>Similar questions found:</strong><ul class="mb-0 mt-2">';
+                    data.forEach(q => {
+                        html += `<li><a href="/question/${q.id}" target="_blank">${q.title}</a> <span class="badge bg-${q.status === 'solved' ? 'success' : 'warning'}">${q.status}</span></li>`;
+                    });
+                    html += '</ul></div>';
+                    document.getElementById('similar-questions').innerHTML = html;
+                } else {
+                    document.getElementById('similar-questions').innerHTML = '';
+                }
+            });
+    }, 500);
+}
+</script>
+{% endblock %}
